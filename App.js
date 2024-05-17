@@ -6,6 +6,7 @@ import store from "./src/redux/store/store";
 
 
 const App = () => {
+
   return (
       <Provider store={store}>
           <NavigationContainer>
