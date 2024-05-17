@@ -16,9 +16,7 @@ const CartScreen = () => {
     const getAllProducts = () => {
         const initialCart = [];
         cartList.forEach(item => {
-            let plan= plans.find(plan => plan.id === item.planId);
-            plan.count = item.count;
-            initialCart.push(plan);
+            initialCart.push(item);
         });
         getTotal(initialCart);
         setCart(initialCart);
@@ -32,39 +30,40 @@ const CartScreen = () => {
     const getTotal = (cart) => {
         let sum = 0;
         cart.forEach(item => {
-            sum += item.count * item.price;
+            sum += item.count * item.plan.price;
         });
         setTotalPrice(sum);
     };
 
     const add = (item) => {
         const updatedCart = cart.map(cartItem => {
-            if (cartItem.id === item.id) {
+            if (cartItem.plan.id === item.plan.id) {
                 return { ...cartItem, count: cartItem.count + 1 };
             }
             return cartItem;
         });
 
         const plan = {
-            planId: item.id,
+            plan: item.plan,
             count: item.count,
         }
 
         dispatch(addToCart(plan));
+
         setCart(updatedCart);
         getTotal(updatedCart);
     };
 
     const remove = (item) => {
         const updatedCart = cart.map(cartItem => {
-            if (cartItem.id === item.id) {
+            if (cartItem.plan.id === item.plan.id) {
                 return { ...cartItem, count: cartItem.count - 1 };
             }
             return cartItem;
         });
 
         const plan = {
-            planId: item.id,
+            plan: item.plan,
             count: item.count,
         }
 
@@ -80,13 +79,13 @@ const CartScreen = () => {
     const MealPlanItem = ({item}) => {
         return (
             <View style={styles.card}>
-                <Image source={{ uri: item.background }} style={styles.backgroundImage} />
+                <Image source={{ uri: item.plan.background }} style={styles.backgroundImage} />
                 <View style={styles.cardContent}>
                     <View style={styles.textContainer}>
-                        <Text style={styles.title}>{item.title}</Text>
-                        <Text style={styles.price}>{item.price + " ₽"}</Text>
+                        <Text style={styles.title}>{item.plan.title}</Text>
+                        <Text style={styles.price}>{item.plan.price + " ₽"}</Text>
                     </View>
-                    <Text style={styles.info}>{item.calories} | {item.meals}</Text>
+                    <Text style={styles.info}>{item.plan.calories + " к"} | {item.plan.meals + " приема пищи"}</Text>
                     <View style={styles.footer}>
                         <View style={styles.buttonsContainer}>
                             <TouchableOpacity style={styles.button} onPress={() => remove(item)}>

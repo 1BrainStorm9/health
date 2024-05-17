@@ -1,5 +1,6 @@
 const initialState = {
     isLoggedIn : false,
+    user: {},
 };
 
 const userReducer = (state = initialState, action) => {
@@ -8,6 +9,11 @@ const userReducer = (state = initialState, action) => {
             return {
                 ...state,
                 isLoggedIn: action.payload,
+            };
+        case 'SET_USER':
+            return {
+                ...state,
+                user: action.payload,
             };
         default:
             return state;

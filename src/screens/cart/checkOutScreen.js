@@ -69,7 +69,7 @@ const CheckOutScreen = ({ route }) => {
         }
         let arr= [];
         cartList.forEach(item => {
-            arr.push(item.planId);
+            arr.push(item.plan.id);
         })
 
         const deliveryDate = `${selectedDate.getDate()}.${selectedDate.getMonth() + 1}.${selectedDate.getFullYear()}`;

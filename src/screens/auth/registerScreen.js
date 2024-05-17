@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useDispatch } from 'react-redux';
-import {setIsLoggedIn, setUser} from '../../redux/actions/userActions';
+import { setIsLoggedIn } from '../../redux/actions/userActions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {create, login} from "../../firebase/firebase";
+import { create } from "../../firebase/firebase";
 import {useNavigation} from "@react-navigation/native";
-import userStorage from "../../storage/userStorage";
 
-const LoginScreen = () => {
+
+const RegisterScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation();
@@ -16,23 +16,18 @@ const LoginScreen = () => {
 
     const onPressHandler = async () => {
 
+        const regUser = await create(email, password);
 
-       const user = await login("test124@gmail.com", "12345678")
-       console.log(user)
-
-        await userStorage.setUserLocally(user);
-        dispatch(setUser(user));
-        dispatch(setIsLoggedIn(true));
+        // dispatch(setIsLoggedIn(true));
     };
 
-    const onPressReg = () =>{
-        navigation.navigate("RegisterScreen");
-    }
-
+    const onPressSignIn = async () => {
+        navigation.goBack();
+    };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Вход</Text>
+            <Text style={styles.title}>Регистрация</Text>
             <TextInput
                 style={styles.input}
                 placeholder="Почта"
@@ -49,11 +44,11 @@ const LoginScreen = () => {
                 onChangeText={setPassword}
             />
             <TouchableOpacity style={styles.button} onPress={onPressHandler}>
-                <Text style={styles.buttonText}>Войти</Text>
+                <Text style={styles.buttonText}>Зарегистрироваться</Text>
             </TouchableOpacity>
             <View style={styles.footer}>
-                <TouchableOpacity onPress={onPressReg}>
-                    <Text style={styles.footerText}>Регистрация</Text>
+                <TouchableOpacity onPress={onPressSignIn}>
+                    <Text style={styles.footerText}>Уже есть аккаунт? Войти</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -101,7 +96,7 @@ const styles = StyleSheet.create({
     },
     footer: {
         flexDirection: 'row',
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
         width: '100%',
     },
     footerText: {
@@ -109,4 +104,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default LoginScreen;
+export default RegisterScreen;

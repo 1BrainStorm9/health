@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import userStorage from "../../storage/userStorage";
 import {useDispatch} from "react-redux";
-import {setIsLoggedIn} from "../../redux/actions/userActions";
+import {setIsLoggedIn, setUser} from "../../redux/actions/userActions";
 import {useNavigation} from "@react-navigation/native";
 const LoaderScreen = () => {
     const dispatch = useDispatch();
@@ -12,7 +12,9 @@ const LoaderScreen = () => {
         const loadData = async () => {
             try {
                 const user = await userStorage.getUserLocally();
-                if(user === true){
+
+                if(user){
+                    dispatch(setUser(user))
                     dispatch(setIsLoggedIn(true));
                 }else {
                     navigation.navigate("AuthScreen")

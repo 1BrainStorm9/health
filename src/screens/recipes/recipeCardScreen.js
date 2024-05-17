@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from "react-redux";
 import { setFavorite, removeFavorite } from "../../redux/actions/favoriteActions";
+import {getRecipesData} from "../../firebase/firebase";
 
 export const RecipeCardScreen = ({ item }) => {
     const navigation = useNavigation();
@@ -11,8 +12,9 @@ export const RecipeCardScreen = ({ item }) => {
     const favorite = useSelector(state => state.favorite.favoriteList);
     const isFavorite = favorite.includes(item.id);
 
+
     const handlePress = () => {
-        navigation.navigate('RecipeInfoScreen', { recipeId: item.id });
+        navigation.navigate('RecipeInfoScreen', { recipe: item});
     };
 
     const onPressFavoriteHandle = (id) => {
@@ -26,7 +28,7 @@ export const RecipeCardScreen = ({ item }) => {
     return (
         <TouchableOpacity onPress={handlePress} style={styles.card}>
             <View style={styles.imageContainer}>
-                <Image source={{ uri: item.image }} style={styles.image} />
+                <Image source={{ uri: item.imageUrl }} style={styles.image} />
                 <TouchableOpacity style={styles.favoriteButton} onPress={() => onPressFavoriteHandle(item.id)}>
                     <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={24} color="red" />
                 </TouchableOpacity>
@@ -34,7 +36,7 @@ export const RecipeCardScreen = ({ item }) => {
             <View style={styles.cardContent}>
                 <Text style={styles.title}>{item.title}</Text>
                 <Text style={styles.ingredients} numberOfLines={2}>{item.ingredients}</Text>
-                <Text style={styles.cardDetails}>{item.calories} | {item.weight}</Text>
+                <Text style={styles.cardDetails}>{item.calories + " к"} | {item.weight + " г"}</Text>
             </View>
         </TouchableOpacity>
     );

@@ -7,7 +7,7 @@ const initialState = {
 const cartReducer = (state = initialState, action) => {
     switch (action.type) {
         case 'ADD_TO_CART':
-            const existingAddIndex = state.cartList.findIndex(item => item.planId === action.payload.planId);
+            const existingAddIndex = state.cartList.findIndex(item => item.plan.id === action.payload.plan.id);
             let updatedCartList;
 
             if (existingAddIndex >= 0) {
@@ -15,9 +15,11 @@ const cartReducer = (state = initialState, action) => {
                     index === existingAddIndex ? { ...item, count: item.count + 1 } : item
                 );
             } else {
-                updatedCartList = [...state.cartList, { planId: action.payload.planId, count: 1 }];
+                updatedCartList = [...state.cartList, { plan: action.payload.plan, count: 1 }];
             }
 
+
+            console.log(updatedCartList)
             cartStorage.saveCart(updatedCartList).then();
             return {
                 ...state,
@@ -25,7 +27,7 @@ const cartReducer = (state = initialState, action) => {
             };
 
         case 'REMOVE_FROM_CART':
-            const existingRemoveIndex = state.cartList.findIndex(item => item.planId === action.payload.planId);
+            const existingRemoveIndex = state.cartList.findIndex(item => item.plan.id === action.payload.plan.id);
             let newCartList;
 
             if (existingRemoveIndex >= 0) {

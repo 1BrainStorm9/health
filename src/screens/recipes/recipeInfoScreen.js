@@ -3,42 +3,41 @@ import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
 import { recipes } from "../../components/fakeData";
 
 const RecipeInfoScreen = ({ route }) => {
-    const { recipeId } = route.params;
-    const neededRecipe = recipes.find(recipe => recipe.id === recipeId);
+    const { recipe } = route.params;
 
     return (
         <ScrollView style={styles.container}>
             <Image
-                source={{ uri: neededRecipe.image }}
+                source={{ uri: recipe?.imageUrl }}
                 style={styles.image}
             />
             <View style={styles.content}>
-                <Text style={styles.title}>{neededRecipe.title}</Text>
+                <Text style={styles.title}>{recipe?.title}</Text>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Описание</Text>
-                    <Text style={styles.sectionText}>{neededRecipe.description}</Text>
+                    <Text style={styles.sectionText}>{recipe?.description}</Text>
                 </View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Ингредиенты</Text>
-                    <Text style={styles.sectionText}>{neededRecipe.ingredients}</Text>
+                    <Text style={styles.sectionText}>{recipe?.ingredients}</Text>
                 </View>
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Рецепт</Text>
-                    <Text style={styles.sectionText}>{neededRecipe.recipe}</Text>
+                    <Text style={styles.sectionText}>{recipe?.recipeText}</Text>
                 </View>
 
                 <View style={styles.nutrition}>
                     <View style={styles.nutritionItem}>
-                        <Text style={styles.nutritionText}>Белки: {neededRecipe.proteins}</Text>
-                        <Text style={styles.nutritionText}>Жиры: {neededRecipe.fats}</Text>
-                        <Text style={styles.nutritionText}>Углеводы: {neededRecipe.carbs}</Text>
+                        <Text style={styles.nutritionText}>Белки: {recipe?.nutritionalValue?.proteins + " г"}</Text>
+                        <Text style={styles.nutritionText}>Жиры: {recipe?.nutritionalValue?.fats + " г"}</Text>
+                        <Text style={styles.nutritionText}>Углеводы: {recipe?.nutritionalValue?.carbs + " г"}</Text>
                     </View>
                     <View style={styles.nutritionItem}>
-                        <Text style={styles.nutritionText}>Калории: {neededRecipe.calories}</Text>
-                        <Text style={styles.nutritionText}>Вес: {neededRecipe.weight}</Text>
+                        <Text style={styles.nutritionText}>Калории: {recipe?.calories}</Text>
+                        <Text style={styles.nutritionText}>Вес: {recipe?.weight + " г"}</Text>
                     </View>
                 </View>
 

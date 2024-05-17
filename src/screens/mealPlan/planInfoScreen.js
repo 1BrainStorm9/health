@@ -4,26 +4,18 @@ import {useEffect, useState} from "react";
 import {RecipeCardScreen} from "../recipes/recipeCardScreen";
 
 const PlanInfoScreen = ({ route }) =>{
-    const { planId } = route.params;
+    const { plan } = route.params;
     const [recipesArr,setRecipesArr] = useState([])
 
     useEffect(() => {
-        let arr = [];
-        const plan= plans.find(plan => plan.id === planId);
-
-        plan.recipesId.forEach(id => {
-           const recipe= recipes.find(recipe => recipe.id === id);
-           arr.push(recipe);
-        })
-
-        setRecipesArr(arr);
+        setRecipesArr(plan);
     }, []);
 
 
     return (
         <View style={styles.container}>
             <FlatList
-                data={recipesArr}
+                data={recipesArr?.recipesId}
                 renderItem={({ item }) => <RecipeCardScreen item={item} />}
                 keyExtractor={item => item.id}
                 numColumns={2}

@@ -1,11 +1,15 @@
-import React from 'react';
-import {View, Text, StyleSheet, ImageBackground, TouchableOpacity, FlatList} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, StyleSheet, ImageBackground, TouchableOpacity, FlatList, ActivityIndicator} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons'; // Assuming you're using Expo, otherwise import icons from another library
 import { useDispatch } from 'react-redux';
 import { setPlanId } from '../../redux/actions/planActions';
 import {plans} from "../../components/fakeData";
 import {useNavigation} from "@react-navigation/native";
-import {addToCart} from "../../redux/actions/cartActions";
+import {addToCart, resetCart, setCartFromLocal} from "../../redux/actions/cartActions";
+import {getPlansData, getRecipesData} from "../../firebase/firebase";
+import favoriteStorage from "../../storage/favoriteStorage";
+import cartStorage from "../../storage/cartStorage";
+import {setFavoriteFromLocal} from "../../redux/actions/favoriteActions";
 
 const PlanCard = ({ item, onPress, onPressCart }) => {
     return (
@@ -29,34 +33,67 @@ const PlanCard = ({ item, onPress, onPressCart }) => {
 const PlanScreen = () => {
     const dispatch = useDispatch();
     const planNavigation = useNavigation();
-    const onPressCardHandler = (planId) => {
-        dispatch(setPlanId(planId));
-        planNavigation.navigate('PlanInfoScreen', { planId });
+    const [plans,setPlans] = useState([])
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        setIsLoading(true)
+        const loadData = async () => {
+            const favorite = await favoriteStorage.loadFavorite();
+            const cart = await cartStorage.loadCart();
+            if (favorite) {
+                dispatch(setFavoriteFromLocal(favorite));
+                dispatch(setCartFromLocal(cart));
+            }
+        };
+        const getData = async () => {
+            return await getPlansData();
+        };
+
+        const fetchData = async () => {
+            dispatch(resetCart())
+            const resp = await getData();
+            setPlans(resp);
+        };
+        fetchData()
+        loadData()
+        setIsLoading(false);
+    }, []);
+
+    const onPressCardHandler = (plan) => {
+        dispatch(setPlanId(plan));
+        planNavigation.navigate('PlanInfoScreen', { plan });
     };
 
-    const onPressCartHandler = (id) => {
+    const onPressCartHandler = (plan) => {
         const item = {
-            planId: id,
+            plan: plan,
             count: 1,
         }
         dispatch(addToCart(item))
     };
 
     return (
-        <View style={styles.container}>
-            <FlatList
-                data={plans}
-                renderItem={({ item }) => (
-                    <PlanCard
-                        item={item}
-                        onPress={() => onPressCardHandler(item.id)}
-                        onPressCart={() => onPressCartHandler(item.id)}
-                    />
-                )}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.listContent}
-            />
-        </View>
+        isLoading
+        ?
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        :
+            <View style={styles.container}>
+                <FlatList
+                    data={plans}
+                    renderItem={({ item }) => (
+                        <PlanCard
+                            item={item}
+                            onPress={() => onPressCardHandler(item)}
+                            onPressCart={() => onPressCartHandler(item)}
+                        />
+                    )}
+                    keyExtractor={item => item.id}
+                    contentContainerStyle={styles.listContent}
+                />
+            </View>
     );
 };
 
@@ -68,6 +105,11 @@ const styles = StyleSheet.create({
     },
     listContent: {
         paddingBottom: 16,
+    },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     card: {
         flex: 1,

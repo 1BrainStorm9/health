@@ -1,13 +1,20 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { useDispatch } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import { setIsLoggedIn } from "../../redux/actions/userActions";
 import { useNavigation } from "@react-navigation/native";
 import userStorage from "../../storage/userStorage";
+import {getCollectionData, getPlansData, getRecipesData, login} from "../../firebase/firebase";
 
 const ProfileScreen = () => {
     const dispatch = useDispatch();
     const navigation = useNavigation();
+    const [email,setEmail] = useState("");
+    const user = useSelector(state => state.user.user);
+
+    useEffect(() => {
+        setEmail(user._tokenResponse.email);
+    }, [user]);
 
     const onPressExitHandler = async () => {
         await userStorage.setUserLocally(false);
@@ -18,7 +25,7 @@ const ProfileScreen = () => {
         navigation.navigate("FavoriteScreen")
     }
 
-    const onPressOrdersHandler = () => {
+    const onPressOrdersHandler = async () => {
         navigation.navigate("OrdersListScreen")
     }
 
@@ -32,7 +39,7 @@ const ProfileScreen = () => {
                         style={styles.profileImage}
                         resizeMode="cover"
                     />
-                    <Text style={styles.username}>Кирилл</Text>
+                    <Text style={styles.username}>{email}</Text>
                 </View>
 
                 <TouchableOpacity onPress={onPressFavoriteHandler}>
