@@ -1,33 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import {fakeOrders} from "../../components/fakeData";
-
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { fakeOrders } from "../../components/fakeData";
+import { getOrdersByUserId } from "../../firebase/firebase";
+import { useSelector } from "react-redux";
 
 const OrdersListScreen = ({ navigation }) => {
     const [orders, setOrders] = useState([]);
-
+    const user = useSelector(state => state.user.user.user.uid)
 
     useEffect(() => {
-        setOrders(fakeOrders);
+        const fetchOrders = async () => {
+            const ordersData = await getOrdersByUserId(user);
+            const formattedOrders = ordersData.map((order, index) => ({
+                ...order,
+                key: (index + 1).toString()
+            }));
+            setOrders(formattedOrders);
+        };
+        fetchOrders();
     }, []);
-
-    const renderOrderItem = ({ item }) => (
-        <TouchableOpacity onPress={() => handleOrderPress(item)}>
-            <View style={styles.orderCard}>
-                <View style={styles.rowContainer}>
-                    <Text style={styles.orderName}>{item.name}</Text>
-                    <Text style={styles.orderStatus}>Статус: {item.status}</Text>
-                </View>
-                <Text style={styles.orderDeliveryDate}>Дата: {item.deliveryDate}</Text>
-                <View style={styles.rowContainer}>
-                    <View>
-                        <Text style={styles.orderDeliveryDate}>Время: {item.deliveryTime}</Text>
-                    </View>
-                    <Text style={styles.orderPrice}>{item.totalPrice} ₽</Text>
-                </View>
-            </View>
-        </TouchableOpacity>
-    );
 
     const handleOrderPress = (order) => {
         navigation.navigate('OrderInfoScreen', { order });
@@ -35,12 +26,25 @@ const OrdersListScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <FlatList
-                data={orders}
-                renderItem={renderOrderItem}
-                keyExtractor={item => item.id.toString()}
-                contentContainerStyle={styles.listContainer}
-            />
+            {orders.map((item) => (
+                <TouchableOpacity key={item.key} onPress={() => handleOrderPress(item)}>
+                    <View style={styles.orderCard}>
+                        <View style={styles.rowContainer}>
+                            <Text style={styles.orderName}>{"Заказ " + item.key}</Text>
+                            <Text style={styles.orderStatus}>Статус: {item.status}</Text>
+                        </View>
+                        <Text style={styles.orderDeliveryDate}>Дата: {new Date(item.deliveryTime.seconds * 1000).toLocaleDateString()}</Text>
+
+                        <View style={styles.rowContainer}>
+                            <View>
+                                <Text style={styles.orderDeliveryDate}>Время: {new Date(item.deliveryTime.seconds * 1000).toLocaleTimeString()}</Text>
+
+                            </View>
+                            <Text style={styles.orderPrice}>{item.price} ₽</Text>
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            ))}
         </View>
     );
 };
@@ -54,14 +58,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 10,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-    },
-    listContainer: {
-        paddingBottom: 20,
     },
     orderCard: {
         backgroundColor: '#fff',
@@ -80,7 +76,6 @@ const styles = StyleSheet.create({
     orderName: {
         fontSize: 18,
         fontWeight: 'bold',
-
     },
     orderStatus: {
         fontSize: 16,

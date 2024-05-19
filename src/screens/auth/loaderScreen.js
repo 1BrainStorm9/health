@@ -12,7 +12,6 @@ const LoaderScreen = () => {
         const loadData = async () => {
             try {
                 const user = await userStorage.getUserLocally();
-
                 if(user){
                     dispatch(setUser(user))
                     dispatch(setIsLoggedIn(true));

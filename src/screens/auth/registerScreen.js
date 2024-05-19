@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useDispatch } from 'react-redux';
-import { setIsLoggedIn } from '../../redux/actions/userActions';
+import {setIsLoggedIn, setUser} from '../../redux/actions/userActions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from "../../firebase/firebase";
 import {useNavigation} from "@react-navigation/native";
+import userStorage from "../../storage/userStorage";
 
 
 const RegisterScreen = () => {
@@ -16,9 +17,10 @@ const RegisterScreen = () => {
 
     const onPressHandler = async () => {
 
-        const regUser = await create(email, password);
-
-        // dispatch(setIsLoggedIn(true));
+        const user = await create(email, password);
+        await userStorage.setUserLocally(user);
+        dispatch(setUser(user));
+        dispatch(setIsLoggedIn(true));
     };
 
     const onPressSignIn = async () => {

@@ -14,12 +14,16 @@ const CartScreen = () => {
     const cartList = useSelector(state => state.cart.cartList);
 
     const getAllProducts = () => {
-        const initialCart = [];
-        cartList.forEach(item => {
-            initialCart.push(item);
-        });
-        getTotal(initialCart);
-        setCart(initialCart);
+        try {
+            const initialCart = [];
+            cartList.forEach(item => {
+                initialCart.push(item);
+            });
+            getTotal(initialCart);
+            setCart(initialCart);   
+        }catch (e) {
+            
+        }
     }
 
 
@@ -66,7 +70,7 @@ const CartScreen = () => {
             plan: item.plan,
             count: item.count,
         }
-
+        
         dispatch(removeFromCart(plan));
         setCart(updatedCart);
         getTotal(updatedCart);

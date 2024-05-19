@@ -1,25 +1,31 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, Text, StyleSheet, FlatList, Image } from 'react-native';
 import { plans } from "../../components/fakeData";
+import {getDoc, getDocs} from "firebase/firestore";
 
 const OrderInfoScreen = ({ route }) => {
     const { order } = route.params;
+    const [products,setProducts] = useState([]);
 
-    const products = [];
-    order.productsId.forEach(productId => {
-        const product = plans.find(plan => plan.id === productId);
-        if (product) {
-            products.push(product);
+    useEffect(() => {
+        const func = async ()=>{
+            let temp= [];
+            order.productList.forEach(async (item) =>{
+               const resp =  await getDoc(item);
+                temp.push(resp.data())
+            })
+            setProducts(temp);
         }
-    });
+        func();
+    }, []);
 
     const renderProductItem = ({ item }) => (
         <View style={styles.productItem}>
             <Image source={{ uri: item.background }} style={styles.productImage} />
             <View style={styles.productDetails}>
                 <Text style={styles.productTitle}>{item.title}</Text>
-                <Text style={styles.productCalories}>{item.calories}</Text>
-                <Text style={styles.productMeals}>{item.meals}</Text>
+                <Text style={styles.productCalories}>{item.calories + " к"}</Text>
+                <Text style={styles.productMeals}>{item.meals + " приема пищи"}</Text>
             </View>
         </View>
     );
@@ -28,15 +34,15 @@ const OrderInfoScreen = ({ route }) => {
         <View style={styles.container}>
             <View style={styles.orderDetails}>
                 <Text style={styles.detailLabel}>Название заказа:</Text>
-                <Text style={styles.detailValue}>{order.name}</Text>
+                <Text style={styles.detailValue}>Заказ {order.key}</Text>
             </View>
             <View style={styles.orderDetails}>
                 <Text style={styles.detailLabel}>Статус:</Text>
                 <Text style={styles.detailValue}>{order.status}</Text>
             </View>
             <View style={styles.orderDetails}>
-                <Text style={styles.detailLabel}>Дата доставки:</Text>
-                <Text style={styles.detailValue}>{order.deliveryDate} {order.deliveryTime}</Text>
+                <Text style={styles.detailLabel}>Время доставки:</Text>
+                <Text style={styles.detailValue}>{new Date(order.deliveryTime.seconds * 1000).toLocaleTimeString()}</Text>
             </View>
             <View style={styles.orderDetails}>
                 <Text style={styles.detailLabel}>Адрес:</Text>
@@ -48,7 +54,7 @@ const OrderInfoScreen = ({ route }) => {
             </View>
             <View style={styles.orderDetails}>
                 <Text style={styles.detailLabel}>Общая цена:</Text>
-                <Text style={styles.detailValue}>{order.totalPrice} ₽</Text>
+                <Text style={styles.detailValue}>{order.price} ₽</Text>
             </View>
             <Text style={styles.productsTitle}>Товары:</Text>
             <FlatList

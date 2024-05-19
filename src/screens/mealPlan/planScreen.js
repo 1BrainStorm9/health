@@ -3,13 +3,13 @@ import {View, Text, StyleSheet, ImageBackground, TouchableOpacity, FlatList, Act
 import { MaterialIcons } from '@expo/vector-icons'; // Assuming you're using Expo, otherwise import icons from another library
 import { useDispatch } from 'react-redux';
 import { setPlanId } from '../../redux/actions/planActions';
-import {plans} from "../../components/fakeData";
 import {useNavigation} from "@react-navigation/native";
 import {addToCart, resetCart, setCartFromLocal} from "../../redux/actions/cartActions";
 import {getPlansData, getRecipesData} from "../../firebase/firebase";
 import favoriteStorage from "../../storage/favoriteStorage";
 import cartStorage from "../../storage/cartStorage";
 import {setFavoriteFromLocal} from "../../redux/actions/favoriteActions";
+import {setIsLoggedIn} from "../../redux/actions/userActions";
 
 const PlanCard = ({ item, onPress, onPressCart }) => {
     return (
@@ -33,11 +33,12 @@ const PlanCard = ({ item, onPress, onPressCart }) => {
 const PlanScreen = () => {
     const dispatch = useDispatch();
     const planNavigation = useNavigation();
-    const [plans,setPlans] = useState([])
+    const [plans, setPlans] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        setIsLoading(true)
+        //dispatch(setIsLoggedIn(false));
+        setIsLoading(true);
         const loadData = async () => {
             const favorite = await favoriteStorage.loadFavorite();
             const cart = await cartStorage.loadCart();
@@ -46,18 +47,16 @@ const PlanScreen = () => {
                 dispatch(setCartFromLocal(cart));
             }
         };
-        const getData = async () => {
-            return await getPlansData();
-        };
 
         const fetchData = async () => {
-            dispatch(resetCart())
-            const resp = await getData();
+            const resp = await getPlansData();
             setPlans(resp);
+            setIsLoading(false);
         };
-        fetchData()
-        loadData()
-        setIsLoading(false);
+
+        fetchData();
+        loadData();
+
     }, []);
 
     const onPressCardHandler = (plan) => {
@@ -74,12 +73,11 @@ const PlanScreen = () => {
     };
 
     return (
-        isLoading
-        ?
+        isLoading ? (
             <View style={styles.loaderContainer}>
                 <ActivityIndicator size="large" color="#0000ff" />
             </View>
-        :
+        ) : (
             <View style={styles.container}>
                 <FlatList
                     data={plans}
@@ -94,8 +92,10 @@ const PlanScreen = () => {
                     contentContainerStyle={styles.listContent}
                 />
             </View>
+        )
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {

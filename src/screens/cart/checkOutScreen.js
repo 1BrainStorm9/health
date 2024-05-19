@@ -6,6 +6,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {useNavigation} from "@react-navigation/native";
 import {resetCart} from "../../redux/actions/cartActions";
 import { ToastAndroid } from 'react-native';
+import {addOrder} from "../../firebase/firebase";
 const CheckOutScreen = ({ route }) => {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedTime, setSelectedTime] = useState(new Date());
@@ -18,6 +19,7 @@ const CheckOutScreen = ({ route }) => {
     const minimalDate = new Date();
     const maxTime = new Date();
     const cartList = useSelector(state => state.cart.cartList);
+    const user = useSelector(state => state.user.user);
     const navigation = useNavigation()
     const dispatch = useDispatch();
     const totalPrice = route.params.price;
@@ -62,43 +64,52 @@ const CheckOutScreen = ({ route }) => {
         showMode("time");
     };
 
-    const submitOrder = () => {
+
+    const submitOrder = async () => {
         if (!address) {
             alert('Пожалуйста, введите адрес');
             return;
         }
-        let arr= [];
-        cartList.forEach(item => {
-            arr.push(item.plan.id);
+
+        let idList = []
+        cartList.forEach(item =>{
+            idList.push(item.plan.planId)
         })
 
-        const deliveryDate = `${selectedDate.getDate()}.${selectedDate.getMonth() + 1}.${selectedDate.getFullYear()}`;
-        const hours = selectedDate.getHours().toString().padStart(2, '0');
-        const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
-        const deliveryTime = `${hours}:${minutes}`;
-
-        const item = {
-            id: fakeOrders.length + 1,
-            name: 'Заказ #' + (fakeOrders.length + 1),
-            totalPrice: totalPrice,
-            status: 'В процессе',
-            deliveryDate: deliveryDate,
-            deliveryTime: deliveryTime,
-            productsId: arr,
+        const object = {
             address: address,
             comment: comment,
-        };
+            deliveryTime: selectedDate,
+            orderTime: new Date(),
+            price: totalPrice,
+            productList: [],
+            userId: user.user.uid,
+        }
 
-
-        fakeOrders.push(item);
+        await addOrder(object,idList);
         dispatch(resetCart());
         ToastAndroid.show('Заказ оформлен!', ToastAndroid.SHORT);
         navigation.reset({
             index: 0,
             routes: [{ name: 'Планы' }],
         });
-
     };
+
+    function convertISOStringToUTCDate(isoString) {
+        const date = new Date(isoString);
+
+        const year = date.getUTCFullYear();
+        const month = date.getUTCMonth(); // Месяц уже в диапазоне 0-11
+        const day = date.getUTCDate();
+        const hours = date.getUTCHours();
+        const minutes = date.getUTCMinutes();
+        const seconds = date.getUTCSeconds();
+        const milliseconds = date.getUTCMilliseconds();
+
+        const utcDate = new Date(Date.UTC(year, month, day, hours, minutes, seconds, milliseconds));
+
+        return utcDate.toISOString();
+    }
 
     return (
         <ScrollView style={styles.container}>

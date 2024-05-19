@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import {View, Text, TextInput, TouchableOpacity, StyleSheet, Alert} from 'react-native';
 import { useDispatch } from 'react-redux';
 import {setIsLoggedIn, setUser} from '../../redux/actions/userActions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,14 +15,14 @@ const LoginScreen = () => {
     const dispatch = useDispatch();
 
     const onPressHandler = async () => {
-
-
-       const user = await login("test124@gmail.com", "12345678")
-       console.log(user)
-
-        await userStorage.setUserLocally(user);
-        dispatch(setUser(user));
-        dispatch(setIsLoggedIn(true));
+        try {
+            const user = await login(email, password)
+            await userStorage.setUserLocally(user);
+            dispatch(setUser(user));
+            dispatch(setIsLoggedIn(true));
+        }catch (e) {
+            Alert.alert("Ой...","Проверьте введенные данные.")
+        }
     };
 
     const onPressReg = () =>{

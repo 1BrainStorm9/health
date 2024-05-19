@@ -1,6 +1,6 @@
 import {initializeApp} from "firebase/app";
 import {createUserWithEmailAndPassword, initializeAuth, signInWithEmailAndPassword, signOut} from "firebase/auth";
-import {collection, getDoc, getDocs, getFirestore} from "firebase/firestore";
+import {addDoc, arrayUnion, collection, doc, getDoc, getDocs, getFirestore, updateDoc, query,where} from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDFowRqVcVaSlwMTCa0OPX8sCCHQK2rcOQ",
@@ -46,23 +46,24 @@ export const getRecipesData = async () => {
 };
 
 const transformRecipeData = async (data) => {
-
     let arr = []
 
     for (const item of data) {
+
+        const itemData = item;
         let result = {};
-        const nutritionalValueRef = item.nutritionalValueRef;
+        const nutritionalValueRef = itemData.nutritionalValueRef;
         const nutritionalValueDoc = await getDoc(nutritionalValueRef);
         result.nutritionalValue = nutritionalValueDoc.data();
 
-        result.ingredients = item.ingredients;
-        result.calories = item.calories;
-        result.description = item.description;
-        result.id = item.id;
-        result.imageUrl = item.imageUrl;
-        result.recipeText = item.recipeText;
-        result.title = item.title;
-        result.weight = item.weight;
+        result.ingredients = itemData.ingredients;
+        result.calories = itemData.calories;
+        result.description = itemData.description;
+        result.id = itemData.id;
+        result.imageUrl = itemData.imageUrl;
+        result.recipeText = itemData.recipeText;
+        result.title = itemData.title;
+        result.weight = itemData.weight;
         arr.push(result);
     }
 
@@ -76,7 +77,11 @@ export const getPlansData = async () => {
         const querySnapshot = await getDocs(collection(db, "plan"));
         let data = [];
         querySnapshot.forEach((doc) => {
-            data.push(doc.data());
+            const docData = {
+                ...doc.data(),
+                docId: doc.id
+            }
+            data.push(docData);
         });
 
         let arr = []
@@ -84,17 +89,20 @@ export const getPlansData = async () => {
         for (const item of data) {
             let result = {};
             const recipeDataPromises = item.recipesId.map(async (recipeRef) => {
-                const recipeDoc = await getDoc(recipeRef);
-                return recipeDoc.data();
+                const respData = await getDoc(recipeRef);
+                return respData.data();
             });
 
             const recipeData = await Promise.all(recipeDataPromises);
+
             result.background = item.background;
             result.calories = item.calories;
             result.meals = item.meals;
             result.id = item.id;
             result.price  = item.price ;
             result.title = item.title;
+            result.planId = item.docId;
+
             result.recipesId = await transformRecipeData(recipeData);
 
             arr.push(result);
@@ -103,5 +111,45 @@ export const getPlansData = async () => {
         return arr;
     } catch (error) {
         console.error("Ошибка получения документов: ", error);
+    }
+};
+
+const ordersCollectionRef = collection(db, 'order');
+
+export const addOrder = async (object,productsList) => {
+    try {
+        const newOrderRef = await addDoc(ordersCollectionRef, object);
+
+        let docsRef = []
+        productsList.forEach(item => {
+            const someDocumentRef = doc(db, 'plan', item);
+            docsRef.push(someDocumentRef);
+        })
+
+        await updateDoc(newOrderRef, {
+            productList: arrayUnion(...docsRef),
+            status: "in progress",
+            id: newOrderRef.id,
+        });
+
+    } catch (e) {
+        console.error('Error adding document: ', e);
+    }
+};
+
+export const getOrdersByUserId = async (userId) => {
+    try {
+        const ordersQuery = query(collection(db, 'order'), where('userId', '==', userId));
+        const querySnapshot = await getDocs(ordersQuery);
+
+        let ordersData = [];
+        querySnapshot.forEach((doc) => {
+            ordersData.push(doc.data());
+        });
+
+        return ordersData;
+    } catch (error) {
+        console.error("Ошибка получения документов: ", error);
+        throw error;
     }
 };

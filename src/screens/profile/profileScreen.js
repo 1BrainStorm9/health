@@ -4,7 +4,14 @@ import {useDispatch, useSelector} from "react-redux";
 import { setIsLoggedIn } from "../../redux/actions/userActions";
 import { useNavigation } from "@react-navigation/native";
 import userStorage from "../../storage/userStorage";
-import {getCollectionData, getPlansData, getRecipesData, login} from "../../firebase/firebase";
+import {
+    addOrder,
+    getCollectionData,
+    getOrdersByUserId,
+    getPlansData,
+    getRecipesData,
+    login, logout
+} from "../../firebase/firebase";
 
 const ProfileScreen = () => {
     const dispatch = useDispatch();
@@ -13,11 +20,14 @@ const ProfileScreen = () => {
     const user = useSelector(state => state.user.user);
 
     useEffect(() => {
-        setEmail(user._tokenResponse.email);
+        if(user){
+            setEmail(user._tokenResponse.email);
+        }
     }, [user]);
 
     const onPressExitHandler = async () => {
-        await userStorage.setUserLocally(false);
+        await userStorage.setUserLocally(null);
+        await logout()
         dispatch(setIsLoggedIn(false));
     }
 
@@ -35,7 +45,7 @@ const ProfileScreen = () => {
             <View style={styles.content}>
                 <View style={styles.profileInfo}>
                     <Image
-                        source={{ uri: "https://sun9-39.userapi.com/impg/2YbIDv721IdreXLQMcbyarCu-oYRgTAvLUCW8Q/MTTJ_kOJ_8Q.jpg?size=2272x2272&quality=95&sign=97a661a76fd720a2ad0388d31ce0e674&type=album" }}
+                        source={{ uri: "https://cdn-icons-png.flaticon.com/512/711/711769.png" }}
                         style={styles.profileImage}
                         resizeMode="cover"
                     />
