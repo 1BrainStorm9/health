@@ -52,7 +52,7 @@
 
 Исходный код для операции: 
 
-    ```js
+    ```
     export const getPlansData = async () => {
     try {
         const querySnapshot = await getDocs(collection(db, "plan"));
@@ -92,8 +92,8 @@
         return arr;
     } catch (error) {
         console.error("Ошибка получения документов: ", error);
-    }
-}; ```
+    }}; 
+    ```
 
 ------------------------------------------------------------------------------------------
 # Термины и сокращения
